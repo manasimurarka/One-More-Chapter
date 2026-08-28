@@ -82,9 +82,15 @@ export function validClassroomAnalyticsRange(value: string | null): ClassroomAna
   return classroomAnalyticsRanges.includes(value as ClassroomAnalyticsRange) ? value as ClassroomAnalyticsRange : '7d';
 }
 
+function clickhouseDateTime(value: Date) {
+  // Query parameters typed as DateTime64(3) do not accept the trailing `Z`
+  // produced by Date#toISOString(). Keep the UTC date/time and milliseconds.
+  return value.toISOString().replace('T', ' ').replace('Z', '');
+}
+
 export async function classroomAnalytics(classroomId: string, range: ClassroomAnalyticsRange): Promise<ClassroomAnalytics> {
   const config = rangeConfig[range];
-  const from = config.days ? new Date(Date.now() - config.days * 24 * 60 * 60 * 1000).toISOString() : null;
+  const from = config.days ? clickhouseDateTime(new Date(Date.now() - config.days * 24 * 60 * 60 * 1000)) : null;
   const where = `classroom_id = {classroomId:UUID}${from ? ' AND occurred_at >= {from:DateTime64(3)}' : ''}`;
   const params = from ? { classroomId, from } : { classroomId };
   const bucket = config.bucket === 'day' ? 'toStartOfDay(occurred_at)' : config.bucket === 'week' ? 'toStartOfWeek(occurred_at, 1)' : 'toStartOfMonth(occurred_at)';
