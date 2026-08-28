@@ -1,0 +1,25 @@
+{
+  "name": "one-more-chapter",
+  "private": true,
+  "workspaces": [
+    "Frontend",
+    "Backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @one-more-chapter/frontend",
+    "build": "npm run build -w @one-more-chapter/frontend",
+    "db:setup": "npm run db:setup -w @one-more-chapter/backend",
+    "db:health": "npm run db:health -w @one-more-chapter/backend",
+    "analytics:setup": "npm run analytics:setup -w @one-more-chapter/backend",
+    "analytics:health": "npm run analytics:health -w @one-more-chapter/backend",
+    "db:seed": "npm run db:seed -w @one-more-chapter/backend",
+    "catalog:import": "npm run catalog:import -w @one-more-chapter/backend",
+    "catalog:retag": "npm run catalog:retag -w @one-more-chapter/backend",
+    "catalog:fail-stale": "npm run catalog:fail-stale -w @one-more-chapter/backend"
+  },
+  "dependencies": {
+    "@types/pg": "^8.23.1",
+    "dotenv": "^17.4.2",
+    "pg": "^8.23.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@one-more-chapter/backend",
+  "private": true,
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "scripts": { "db:setup": "tsx scripts/setup.ts", "analytics:setup": "tsx scripts/setup-clickhouse.ts", "db:health": "tsx scripts/test-db.ts", "analytics:health": "tsx scripts/test-clickhouse.ts", "db:seed": "tsx scripts/seed.ts", "catalog:import": "tsx scripts/import-catalog.ts", "catalog:retag": "tsx scripts/retag-catalog.ts", "catalog:fail-stale": "tsx scripts/fail-stale-catalog-imports.ts", "test": "tsx --test src/**/*.test.ts" },
+  "dependencies": { "@clickhouse/client": "^1.14.0", "bcryptjs": "^2.4.3", "dotenv": "^17.4.2", "openai": "^5.0.0", "pg": "^8.23.0", "zod": "^3.24.0" },
+  "devDependencies": { "@types/pg": "^8.23.1", "tsx": "^4.19.0", "typescript": "^5.7.0" }
+}

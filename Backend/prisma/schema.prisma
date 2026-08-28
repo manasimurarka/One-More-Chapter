@@ -1,0 +1,211 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  TEACHER
+  STUDENT
+}
+
+enum ReadingStatus {
+  ACTIVE
+  PAUSED
+  SWITCHED
+  FINISHED
+}
+
+enum Feeling {
+  LOVING_IT
+  ENJOYING
+  UNSURE
+  GETTING_HARD
+}
+
+model Teacher {
+  id           String      @id @default(uuid())
+  username     String      @unique
+  passwordHash String
+  displayName  String
+  classrooms   Classroom[]
+  sessions     Session[]
+  studentNotes TeacherStudentNote[]
+  concernActions TeacherStudentConcernAction[]
+  createdAt    DateTime    @default(now())
+}
+
+model Classroom {
+  id          String                @id @default(uuid())
+  teacherId   String
+  teacher     Teacher               @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  name        String
+  code        String                @unique
+  archivedAt  DateTime?
+  memberships ClassroomMembership[]
+  studentNotes TeacherStudentNote[]
+  concernActions TeacherStudentConcernAction[]
+  createdAt   DateTime              @default(now())
+}
+
+model Student {
+  id          String                @id @default(uuid())
+  displayName String
+  age         Int?
+  readingLevel String?
+  pinHash     String
+  memberships ClassroomMembership[]
+  sessions    Session[]
+  profile     StudentStoryProfile?
+  books       StudentBook[]
+  teacherNotes TeacherStudentNote[]
+  concernActions TeacherStudentConcernAction[]
+  createdAt   DateTime              @default(now())
+}
+
+model ClassroomMembership {
+  id          String    @id @default(uuid())
+  classroomId String
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  active      Boolean   @default(true)
+
+  @@unique([classroomId, studentId])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  role      Role
+  teacherId String?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  studentId String?
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Book {
+  id              String               @id @default(uuid())
+  title           String
+  authors         String[]
+  description     String?
+  coverUrl        String?
+  isbns           String[]
+  pageCount       Int?
+  categories      String[]
+  tags            Json
+  minAge          Int?
+  maxAge          Int?
+  maturityRating  String?
+  ageRatingSource String?
+  ageRatingUrl    String?
+  recommendable   Boolean              @default(false)
+  embeddingModel  String?
+  embeddingHash   String?
+  metadataUpdatedAt DateTime?
+  sources         BookSource[]
+  recommendations RecommendationItem[]
+  studentBooks    StudentBook[]
+  createdAt       DateTime             @default(now())
+}
+
+model BookSource {
+  id         String @id @default(uuid())
+  bookId     String
+  book       Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  provider   String
+  providerId String
+  sourceUrl  String?
+
+  @@unique([provider, providerId])
+}
+
+model StudentStoryProfile {
+  id        String   @id @default(uuid())
+  studentId String   @unique
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  answers   Json
+  dna       Json
+  favorite  String?
+  summary   String
+  updatedAt DateTime @updatedAt
+}
+
+model RecommendationBatch {
+  id        String               @id @default(uuid())
+  studentId String
+  createdAt DateTime             @default(now())
+  items     RecommendationItem[]
+}
+
+model RecommendationItem {
+  id      String              @id @default(uuid())
+  batchId String
+  batch   RecommendationBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  bookId  String
+  book    Book                @relation(fields: [bookId], references: [id])
+  rank    Int
+  score   Float
+  reason  String
+
+  @@unique([batchId, rank])
+}
+
+model StudentBook {
+  id            String        @id @default(uuid())
+  studentId     String
+  student       Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  bookId        String
+  book          Book          @relation(fields: [bookId], references: [id])
+  status        ReadingStatus @default(ACTIVE)
+  currentPage   Int           @default(0)
+  feeling       Feeling?
+  lastCheckinAt DateTime?
+  selectedAt    DateTime      @default(now())
+  switchedAt    DateTime?     @map("switched_at")
+  checkins      ReadingCheckin[]
+}
+
+model ReadingCheckin {
+  id            String      @id @default(uuid())
+  studentBookId String
+  studentBook   StudentBook @relation(fields: [studentBookId], references: [id], onDelete: Cascade)
+  pageNumber    Int
+  feeling       Feeling
+  createdAt     DateTime    @default(now())
+}
+
+model TeacherStudentNote {
+  id String @id @default(uuid())
+  teacherId String
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  classroomId String
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  studentId String
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  body String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TeacherStudentConcernAction {
+  id String @id @default(uuid())
+  teacherId String
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  classroomId String
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  studentId String
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concernType String
+  evidenceAt DateTime
+  acknowledgedAt DateTime @default(now())
+
+  @@unique([teacherId, classroomId, studentId, concernType])
+}
