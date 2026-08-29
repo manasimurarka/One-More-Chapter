@@ -1,4 +1,6 @@
-# One More Chapter
+<p align="center">
+   <img width="300" height="100" alt="logo" src="https://github.com/user-attachments/assets/c8101247-d569-4031-8555-c56d684be52e" />
+</p>
 
 One More Chapter is a reading companion for students in grades 3–5 and the teachers who support them. Its goal is simple: help children find books they want to keep reading, record how reading is going, and give teachers useful signals when a student may need encouragement.
 
